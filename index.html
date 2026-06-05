@@ -1,0 +1,643 @@
+cat > /mnt/user-data/outputs/listcraft.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ListCraft AI — Amazon FBA Listing Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c0f;
+  --surface:#111418;
+  --surface2:#181c22;
+  --border:#1e2530;
+  --border2:#2a3340;
+  --amber:#f5a623;
+  --amber2:#e8941a;
+  --green:#00c896;
+  --red:#ff4757;
+  --text:#e2e8f0;
+  --muted:#5a6a7e;
+  --muted2:#3a4a5e;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px 80px}
+
+/* HEADER */
+.header{
+  padding:32px 0 28px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:36px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{
+  width:38px;height:38px;
+  background:var(--amber);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  flex-shrink:0;
+}
+.brand-name{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;letter-spacing:-0.5px}
+.brand-tag{font-size:10px;color:var(--amber);font-family:'IBM Plex Mono',monospace;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.header-right{display:flex;align-items:center;gap:12px}
+.uses-badge{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--muted);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:6px 12px;
+}
+.uses-badge strong{color:var(--amber)}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+
+/* FORM CARD */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:20px;
+}
+.card-full{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:20px;
+  margin-bottom:20px;
+}
+.field-label{
+  font-size:10px;
+  font-family:'IBM Plex Mono',monospace;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.field-label span{color:var(--amber)}
+input,textarea,select{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:11px 13px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:14px;
+  color:var(--text);
+  outline:none;
+  transition:border-color .15s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--amber)}
+input::placeholder,textarea::placeholder{color:var(--muted2)}
+textarea{resize:vertical;line-height:1.6}
+select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235a6a7e' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+select option{background:var(--surface2)}
+.field-hint{font-size:11px;color:var(--muted);margin-top:5px;font-family:'IBM Plex Mono',monospace}
+
+/* GENERATE BTN */
+.btn-gen{
+  width:100%;
+  padding:15px;
+  background:var(--amber);
+  color:#0a0c0f;
+  border:none;
+  border-radius:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:1px;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-top:4px;
+}
+.btn-gen:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(245,166,35,.2)}
+.btn-gen:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* OUTPUT */
+.output-section{margin-top:8px}
+.output-block{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin-bottom:14px;
+  overflow:hidden;
+}
+.output-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface2);
+}
+.output-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--muted);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.output-label::before{
+  content:'';
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--amber);
+}
+.char-count{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+}
+.char-count.ok{color:var(--green)}
+.char-count.warn{color:var(--amber)}
+.char-count.over{color:var(--red)}
+.btn-copy{
+  padding:5px 12px;
+  background:transparent;
+  border:1px solid var(--border2);
+  border-radius:4px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  cursor:pointer;
+  transition:all .15s;
+}
+.btn-copy:hover{border-color:var(--amber);color:var(--amber)}
+.btn-copy.done{border-color:var(--green);color:var(--green)}
+.output-content{
+  padding:16px;
+  font-size:14px;
+  line-height:1.7;
+  color:var(--text);
+  white-space:pre-wrap;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+}
+.output-content.loading{
+  color:var(--muted);
+  font-style:italic;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+/* SKELETON */
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:.7}}
+.skeleton{height:14px;background:var(--surface2);border-radius:4px;animation:pulse 1.5s ease-in-out infinite;margin-bottom:8px}
+.skeleton:last-child{width:60%}
+
+/* COPY ALL */
+.btn-copyall{
+  width:100%;
+  padding:12px;
+  background:transparent;
+  border:1px solid var(--border2);
+  border-radius:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  color:var(--text);
+  cursor:pointer;
+  transition:all .15s;
+  margin-top:4px;
+}
+.btn-copyall:hover{border-color:var(--amber);color:var(--amber)}
+
+/* STATS */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:28px;
+}
+.stat{
+  background:var(--surface);
+  padding:16px 20px;
+  text-align:center;
+}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:var(--amber)}
+.stat-l{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.5px}
+
+/* PAYWALL */
+.paywall{
+  background:var(--surface);
+  border:1px solid var(--amber);
+  border-radius:12px;
+  padding:40px 32px;
+  text-align:center;
+  box-shadow:0 0 40px rgba(245,166,35,.08);
+}
+.paywall h2{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;margin-bottom:8px}
+.paywall p{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:28px}
+.steps{
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:16px 20px;
+  text-align:left;
+  margin-bottom:20px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  color:var(--muted);
+  line-height:2.2;
+}
+.steps span{color:var(--amber);margin-right:8px}
+.wallet-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:12px 14px;
+  margin-bottom:14px;
+}
+.wallet-addr{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  flex:1;
+  word-break:break-all;
+  text-align:left;
+}
+.btn-cpaddr{
+  padding:6px 12px;
+  background:var(--amber);
+  color:#0a0c0f;
+  border:none;
+  border-radius:4px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.tg-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:12px;
+  margin-bottom:20px;
+  color:var(--green);
+  font-size:13px;
+  text-decoration:none;
+  cursor:pointer;
+}
+.code-row{display:flex;gap:8px}
+.code-inp{
+  flex:1;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:6px;
+  padding:11px 13px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+}
+.code-inp:focus{border-color:var(--amber)}
+.btn-unlock{
+  padding:11px 20px;
+  background:var(--amber);
+  color:#0a0c0f;
+  border:none;
+  border-radius:6px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+}
+.note{font-size:11px;color:var(--muted);margin-top:12px;font-family:'IBM Plex Mono',monospace}
+.note.err{color:var(--red)}
+
+/* FOOTER */
+.footer{
+  margin-top:60px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--muted);
+  flex-wrap:wrap;
+  gap:8px;
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ── CONFIG ──────────────────────────
+const GROQ_KEY  = "YOUR_GROQ_KEY_HERE";
+const WALLET    = "0xEf62bb63Bec2179789F6b2787a771E6Fa410cB27";
+const TELEGRAM  = "https://t.me/jewelDark";
+const FREE_LIMIT = 3;
+const VALID_CODES = ["LIST-JUN26","LIST-JUL26","LIST-AUG26"];
+// ────────────────────────────────────
+
+const {useState,useEffect,useRef} = React;
+
+const CATS = ["Electronics","Home & Kitchen","Beauty & Personal Care","Sports & Outdoors","Clothing & Fashion","Toys & Games","Health & Household","Pet Supplies","Office Products","Tools & Home Improvement","Baby","Automotive","Garden & Outdoor","Food & Grocery"];
+
+const OUTPUT_FIELDS = [
+  {key:"title",    label:"PRODUCT TITLE",    max:200, hint:"200 chars max"},
+  {key:"bullets",  label:"BULLET POINTS",    max:null, hint:"5 key features"},
+  {key:"desc",     label:"PRODUCT DESCRIPTION", max:2000, hint:"2000 chars"},
+  {key:"keywords", label:"BACKEND KEYWORDS", max:null, hint:"comma separated"},
+];
+
+function copy(text,cb){navigator.clipboard.writeText(text).then(()=>{cb(true);setTimeout(()=>cb(false),2000)})}
+
+function OutputBlock({label,content,max,hint,loading}){
+  const [done,setDone]=useState(false);
+  const chars = content ? content.length : 0;
+  const countClass = max ? (chars>max?"over":chars>max*0.9?"warn":"ok") : "";
+  return(
+    <div className="output-block">
+      <div className="output-header">
+        <div className="output-label">{label}</div>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          {max && content && <span className={`char-count ${countClass}`}>{chars}/{max}</span>}
+          {content && <button className={`btn-copy${done?" done":""}`} onClick={()=>copy(content,setDone)}>{done?"✓ COPIED":"COPY"}</button>}
+        </div>
+      </div>
+      <div className={`output-content${loading?" loading":""}`}>
+        {loading
+          ? <><div className="skeleton"/><div className="skeleton"/><div className="skeleton"/></>
+          : content||<span style={{color:"var(--muted2)",fontStyle:"italic"}}>Output will appear here...</span>
+        }
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const [name,setName]     = useState("");
+  const [cat,setCat]       = useState("");
+  const [feat,setFeat]     = useState("");
+  const [target,setTarget] = useState("");
+  const [usp,setUsp]       = useState("");
+  const [out,setOut]       = useState({title:"",bullets:"",desc:"",keywords:""});
+  const [loading,setLoading]= useState(false);
+  const [uses,setUses]     = useState(0);
+  const [unlocked,setUnlocked]=useState(false);
+  const [code,setCode]     = useState("");
+  const [codeErr,setCodeErr]=useState(false);
+  const [allDone,setAllDone]=useState(false);
+  const [addrDone,setAddrDone]=useState(false);
+  const outRef = useRef(null);
+
+  useEffect(()=>{
+    setUses(parseInt(localStorage.getItem("lc_u")||"0"));
+    setUnlocked(localStorage.getItem("lc_ul")==="true");
+  },[]);
+
+  const locked = !unlocked && uses>=FREE_LIMIT;
+  const canGen = name.trim()&&cat&&feat.trim()&&!loading&&!locked;
+
+  const generate = async()=>{
+    if(!canGen)return;
+    setLoading(true);
+    setOut({title:"",bullets:"",desc:"",keywords:""});
+
+    const prompt=`You are an expert Amazon FBA copywriter. Generate a complete, optimized Amazon product listing.
+
+Product: ${name}
+Category: ${cat}
+Key Features: ${feat}
+Target Customer: ${target||"general consumers"}
+Unique Selling Points: ${usp||"quality, value, reliability"}
+
+Create:
+1. TITLE: Keyword-rich, benefit-focused, max 200 characters. Start with main keyword.
+2. BULLET POINTS: 5 bullet points starting with capital letters. Each 150-200 chars. Focus on benefits not features. Format as:
+• Bullet 1
+• Bullet 2
+• Bullet 3
+• Bullet 4
+• Bullet 5
+3. DESCRIPTION: 300-500 words. Engaging, keyword-rich, tell a story. Use HTML-style paragraphs.
+4. BACKEND KEYWORDS: 20-30 relevant search terms, comma separated.
+
+Format your response EXACTLY like this:
+TITLE:
+[title here]
+
+BULLETS:
+[bullets here]
+
+DESCRIPTION:
+[description here]
+
+KEYWORDS:
+[keywords here]`;
+
+    try{
+      const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${GROQ_KEY}`},
+        body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"user",content:prompt}],max_tokens:2000,temperature:0.7})
+      });
+      const d=await r.json();
+      const text=d.choices?.[0]?.message?.content||"";
+
+      const parse=(label,next)=>{
+        const start=text.indexOf(label+":");
+        if(start===-1)return"";
+        const after=text.slice(start+label.length+1);
+        const end=next?after.indexOf("\n"+next+":"):after.length;
+        return after.slice(0,end>0?end:undefined).trim();
+      };
+
+      setOut({
+        title:   parse("TITLE","BULLETS"),
+        bullets: parse("BULLETS","DESCRIPTION"),
+        desc:    parse("DESCRIPTION","KEYWORDS"),
+        keywords:parse("KEYWORDS",null),
+      });
+
+      if(!unlocked){
+        const n=uses+1;
+        setUses(n);
+        localStorage.setItem("lc_u",n);
+      }
+      setTimeout(()=>outRef.current?.scrollIntoView({behavior:"smooth"}),100);
+    }catch(e){
+      setOut({title:"Connection error. Please try again.",bullets:"",desc:"",keywords:""});
+    }
+    setLoading(false);
+  };
+
+  const unlock=()=>{
+    if(VALID_CODES.includes(code.trim().toUpperCase())){
+      localStorage.setItem("lc_ul","true");
+      setUnlocked(true);
+    }else{setCodeErr(true);setTimeout(()=>setCodeErr(false),2500);}
+  };
+
+  const copyAll=()=>{
+    const all=`TITLE:\n${out.title}\n\nBULLET POINTS:\n${out.bullets}\n\nDESCRIPTION:\n${out.desc}\n\nBACKEND KEYWORDS:\n${out.keywords}`;
+    copy(all,setAllDone);
+  };
+
+  const hasOutput = out.title||out.bullets||out.desc||out.keywords;
+
+  return(
+    <div className="wrap">
+
+      {/* HEADER */}
+      <div className="header">
+        <div className="brand">
+          <div className="brand-icon">📦</div>
+          <div>
+            <div className="brand-name">ListCraft</div>
+            <div className="brand-tag">Amazon FBA AI</div>
+          </div>
+        </div>
+        <div className="header-right">
+          <div className="uses-badge">
+            {unlocked
+              ? <span style={{color:"var(--green)"}}>✓ UNLIMITED</span>
+              : <><strong>{Math.max(0,FREE_LIMIT-uses)}</strong> FREE LISTINGS LEFT</>
+            }
+          </div>
+        </div>
+      </div>
+
+      {/* STATS */}
+      <div className="stats">
+        {[["3M+","Amazon Sellers"],["$200","Avg Copywriter Cost"],["30s","Our Generation Time"]].map(([n,l])=>(
+          <div key={l} className="stat">
+            <div className="stat-n">{n}</div>
+            <div className="stat-l">{l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* FORM */}
+      {!locked&&<>
+        <div className="grid">
+          <div className="card">
+            <div className="field-label">Product Name <span>*</span></div>
+            <input placeholder="e.g. Stainless Steel Water Bottle 32oz" value={name} onChange={e=>setName(e.target.value)}/>
+          </div>
+          <div className="card">
+            <div className="field-label">Category <span>*</span></div>
+            <select value={cat} onChange={e=>setCat(e.target.value)}>
+              <option value="">Select category...</option>
+              {CATS.map(c=><option key={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="card-full">
+          <div className="field-label">Key Features & Specifications <span>*</span></div>
+          <textarea rows={4} placeholder="e.g. BPA-free, keeps cold 24hrs/hot 12hrs, leak-proof lid, wide mouth, fits car cup holder..." value={feat} onChange={e=>setFeat(e.target.value)}/>
+          <div className="field-hint">List all features, materials, size, color, certifications</div>
+        </div>
+
+        <div className="grid">
+          <div className="card">
+            <div className="field-label">Target Customer</div>
+            <input placeholder="e.g. outdoor enthusiasts, gym-goers, hikers" value={target} onChange={e=>setTarget(e.target.value)}/>
+          </div>
+          <div className="card">
+            <div className="field-label">Unique Selling Points</div>
+            <input placeholder="e.g. lifetime warranty, eco-friendly, premium grade" value={usp} onChange={e=>setUsp(e.target.value)}/>
+          </div>
+        </div>
+
+        <button className="btn-gen" onClick={generate} disabled={!canGen}>
+          {loading?"⟳  GENERATING LISTING...":"▶  GENERATE AMAZON LISTING"}
+        </button>
+      </>}
+
+      {/* OUTPUT */}
+      {(loading||hasOutput)&&(
+        <div className="output-section" ref={outRef} style={{marginTop:28}}>
+          {OUTPUT_FIELDS.map(f=>(
+            <OutputBlock key={f.key} label={f.label} content={out[f.key]} max={f.max} hint={f.hint} loading={loading&&!out[f.key]}/>
+          ))}
+          {hasOutput&&<button className={`btn-copyall${allDone?" ":" "}`} onClick={copyAll}>{allDone?"✓ ALL COPIED!":"⬇  COPY COMPLETE LISTING"}</button>}
+        </div>
+      )}
+
+      {/* PAYWALL */}
+      {locked&&(
+        <div className="paywall" style={{marginTop:28}}>
+          <h2>FREE LIMIT REACHED</h2>
+          <p>You've used your 3 free listings.<br/>Upgrade for unlimited listings — pay once with USDT.</p>
+
+          <div className="steps">
+            <div><span>①</span>Send $29 USDT to the address below (BEP20 network)</div>
+            <div><span>②</span>Send your TX hash to Telegram</div>
+            <div><span>③</span>Receive unlock code instantly</div>
+          </div>
+
+          <div className="wallet-row">
+            <span className="wallet-addr">{WALLET}</span>
+            <button className="btn-cpaddr" onClick={()=>{navigator.clipboard.writeText(WALLET);setAddrDone(true);setTimeout(()=>setAddrDone(false),2000)}}>{addrDone?"✓ COPIED":"COPY"}</button>
+          </div>
+
+          <a className="tg-row" href={TELEGRAM} target="_blank">
+            📩 Send TX proof on Telegram → @jewelDark
+          </a>
+
+          <div className="code-row">
+            <input className="code-inp" placeholder="Enter unlock code..." value={code} onChange={e=>setCode(e.target.value)} style={{borderColor:codeErr?"var(--red)":""}}/>
+            <button className="btn-unlock" onClick={unlock}>UNLOCK</button>
+          </div>
+          <div className={`note${codeErr?" err":""}`}>
+            {codeErr?"❌ Invalid code":"Network: BEP20 (BSC) · $29/month · unlimited listings"}
+          </div>
+        </div>
+      )}
+
+      <div className="footer">
+        <span>ListCraft AI © 2026</span>
+        <span>Powered by Groq · GitHub Pages</span>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
+HTMLEOF
+echo "Done - $(wc -c < /mnt/user-data/outputs/listcraft.html) bytes"
